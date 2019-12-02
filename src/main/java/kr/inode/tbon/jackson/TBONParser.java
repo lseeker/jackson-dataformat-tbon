@@ -20,8 +20,16 @@ public class TBONParser extends JsonParser {
 	private final InputStream in;
 	private boolean closed;
 
+	private boolean isPrimitive;
+
 	private JsonToken currentToken;
+	private byte byteValue;
+	private short shortValue;
 	private int intValue;
+	private long longValue;
+	private float floatValue;
+	private double doubleValue;
+	private Object objectValue;
 
 	TBONParser(InputStream in) {
 		this.in = in;
@@ -87,12 +95,12 @@ public class TBONParser extends JsonParser {
 			case 0x20:
 				currentToken = JsonToken.VALUE_NUMBER_FLOAT;
 			case 0x28:
-				
+
 			default: // Custom type
 				int len = b & 0x0f;
 				if (len == 0x0f) {
 					// stream length
-					
+
 				} else {
 					// read length to string
 				}
@@ -102,7 +110,7 @@ public class TBONParser extends JsonParser {
 			// array, object
 		} else {
 			// octet, string
-			
+
 		}
 
 		return currentToken;
@@ -200,7 +208,6 @@ public class TBONParser extends JsonParser {
 
 	@Override
 	public boolean hasTextCharacters() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -212,20 +219,17 @@ public class TBONParser extends JsonParser {
 
 	@Override
 	public NumberType getNumberType() throws IOException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int getIntValue() throws IOException {
-		// TODO Auto-generated method stub
-		return 0;
+		return intValue;
 	}
 
 	@Override
 	public long getLongValue() throws IOException {
-		// TODO Auto-generated method stub
-		return 0;
+		return longValue;
 	}
 
 	@Override
