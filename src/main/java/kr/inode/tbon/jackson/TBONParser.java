@@ -16,9 +16,15 @@ import com.fasterxml.jackson.core.json.PackageVersion;
 
 public class TBONParser extends JsonParser {
 	private ObjectCodec objectCodec;
-	
+
+	private final InputStream in;
+	private boolean closed;
+
+	private JsonToken currentToken;
+	private int intValue;
+
 	TBONParser(InputStream in) {
-		
+		this.in = in;
 	}
 
 	@Override
@@ -38,13 +44,12 @@ public class TBONParser extends JsonParser {
 
 	@Override
 	public void close() throws IOException {
-
+		closed = true;
 	}
 
 	@Override
 	public boolean isClosed() {
-		// TODO Auto-generated method stub
-		return false;
+		return closed;
 	}
 
 	@Override
@@ -65,8 +70,42 @@ public class TBONParser extends JsonParser {
 
 	@Override
 	public JsonToken nextToken() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		int b = in.read();
+		if ((b & 0xc0) == 0) {
+			switch (b & 0xf8) {
+			case 0x00:
+				currentToken = JsonToken.VALUE_NUMBER_INT;
+				intValue = 0;
+				break;
+			case 0x08:
+				currentToken = JsonToken.VALUE_NUMBER_INT;
+
+			case 0x10:
+				currentToken = JsonToken.VALUE_NUMBER_INT;
+			case 0x18:
+				currentToken = JsonToken.VALUE_NUMBER_INT;
+			case 0x20:
+				currentToken = JsonToken.VALUE_NUMBER_FLOAT;
+			case 0x28:
+				
+			default: // Custom type
+				int len = b & 0x0f;
+				if (len == 0x0f) {
+					// stream length
+					
+				} else {
+					// read length to string
+				}
+
+			}
+		} else if ((b & 0x80) == 0) {
+			// array, object
+		} else {
+			// octet, string
+			
+		}
+
+		return currentToken;
 	}
 
 	@Override
