@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.core.Base64Variant;
 import com.fasterxml.jackson.core.JsonLocation;
@@ -15,6 +16,11 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.json.PackageVersion;
 
 public class TBONParser extends JsonParser {
+	private static interface ValueConverter {
+		String toString();
+		
+	}
+	
 	private ObjectCodec objectCodec;
 
 	private final InputStream in;
@@ -76,6 +82,54 @@ public class TBONParser extends JsonParser {
 		return JsonLocation.NA;
 	}
 
+	private int readVPInt() throws IOException {
+		int i = 0;
+		int shift = 0;
+		int read;
+		do {
+			read = in.read();
+			if (read == -1) {
+				throw new IOException("EOS on VInt read");
+			}
+			i |= read << shift;
+			shift += 7;
+		} while ((read & 0x80) == 0x80);
+		return i;
+	}
+
+	private long readVPLong() throws IOException {
+		long l = 0;
+		int shift = 0;
+		int read;
+		do {
+			read = in.read();
+			if (read == -1) {
+				throw new IOException("EOS on VInt read");
+			}
+			l |= read << shift;
+			shift += 7;
+		} while ((read & 0x80) == 0x80);
+		return l;
+	}
+	
+	private byte[] readOctet(int len) throws IOException {
+		byte[] b = new byte[len];
+		int read = 0;
+		while (read < len) {
+			int r = in.read(b, read, len - read);
+			if (r == -1) {
+				throw new IOException("EOS on octet read");
+			}
+			read += r;
+		}
+		return b;		
+	}
+
+	private byte[] readVLengthOctet() throws IOException {
+		return readOctet(readVPInt());
+	}
+	
+
 	@Override
 	public JsonToken nextToken() throws IOException {
 		int b = in.read();
@@ -87,22 +141,26 @@ public class TBONParser extends JsonParser {
 				break;
 			case 0x08:
 				currentToken = JsonToken.VALUE_NUMBER_INT;
-
+				break;
 			case 0x10:
 				currentToken = JsonToken.VALUE_NUMBER_INT;
+				break;
 			case 0x18:
 				currentToken = JsonToken.VALUE_NUMBER_INT;
+				break;
 			case 0x20:
 				currentToken = JsonToken.VALUE_NUMBER_FLOAT;
 			case 0x28:
-
+				break;
 			default: // Custom type
+				currentToken = JsonToken.VALUE_EMBEDDED_OBJECT;
 				int len = b & 0x0f;
 				if (len == 0x0f) {
 					// stream length
-
+					objectValue = new String(readVLengthOctet(), StandardCharsets.UTF_8);
 				} else {
 					// read length to string
+					
 				}
 
 			}
