@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.core.Base64Variant;
@@ -167,6 +168,19 @@ public class TBONParser extends JsonParser {
 			// array, object
 		} else {
 			// octet, string
+			currentToken = (b & 0x40) == 0 ? JsonToken.VALUE_EMBEDDED_OBJECT : JsonToken.VALUE_STRING;
+			int len = b & 0x0f;
+			if (len == 0xff) {
+				// stream
+
+			} else {
+				byte[] barr = readOctet(len);
+				if (currentToken == JsonToken.VALUE_STRING) {
+					objectValue = new String(barr, StandardCharsets.UTF_8);
+				} else {
+					objectValue = barr;
+				}
+			}
 
 		}
 
