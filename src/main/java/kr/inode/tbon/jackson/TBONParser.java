@@ -18,9 +18,9 @@ import com.fasterxml.jackson.core.json.PackageVersion;
 public class TBONParser extends JsonParser {
 	private static interface ValueConverter {
 		String toString();
-		
+
 	}
-	
+
 	private ObjectCodec objectCodec;
 
 	private final InputStream in;
@@ -111,7 +111,7 @@ public class TBONParser extends JsonParser {
 		} while ((read & 0x80) == 0x80);
 		return l;
 	}
-	
+
 	private byte[] readOctet(int len) throws IOException {
 		byte[] b = new byte[len];
 		int read = 0;
@@ -122,13 +122,12 @@ public class TBONParser extends JsonParser {
 			}
 			read += r;
 		}
-		return b;		
+		return b;
 	}
 
 	private byte[] readVLengthOctet() throws IOException {
 		return readOctet(readVPInt());
 	}
-	
 
 	@Override
 	public JsonToken nextToken() throws IOException {
@@ -160,7 +159,7 @@ public class TBONParser extends JsonParser {
 					objectValue = new String(readVLengthOctet(), StandardCharsets.UTF_8);
 				} else {
 					// read length to string
-					
+
 				}
 
 			}
